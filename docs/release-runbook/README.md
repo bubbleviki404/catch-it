@@ -96,7 +96,9 @@ git push origin v0.4.1
 - `dist/CatchIt-v0.4.1-universal.zip`
 - `dist/CatchIt-latest.zip`
 
-不要标记 Draft 或 Prerelease。官网始终下载固定名称 `CatchIt-latest.zip`。
+发布前逐项确认：Tag、Release title 和安装包版本一致；两个附件均显示完整文件名和大小；Release label 选择 `Latest`。不要标记 Draft 或 Prerelease。官网始终下载固定名称 `CatchIt-latest.zip`。
+
+![GitHub Release 发布前检查](images/04-github-release-ready.png)
 
 ### 8. 发布后验证
 
