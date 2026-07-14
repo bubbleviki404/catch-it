@@ -19,6 +19,11 @@ guard result.outputSize == NSSize(width: 400, height: 480) else {
     exit(1)
 }
 
+guard result.outputPixelSize == NSSize(width: 400, height: 480) else {
+    fputs("FAIL: crop output pixels were \(result.outputPixelSize), expected 400x480 without Retina double scaling\n", stderr)
+    exit(1)
+}
+
 guard result.didLeaveCropTool else {
     fputs("FAIL: committing crop should return to the select tool\n", stderr)
     exit(1)
@@ -29,7 +34,7 @@ guard max(result.mosaicCacheSize.width, result.mosaicCacheSize.height) <= 150 el
     exit(1)
 }
 
-print("PASS: crop output is 400x480 and mosaic cache stays thumbnail-sized")
+print("PASS: crop output is exactly 400x480 pixels and mosaic cache stays thumbnail-sized")
 
 let history = runAnnotationHistorySelfTest()
 guard history.countAfterEdit == 2,
@@ -40,3 +45,19 @@ guard history.countAfterEdit == 2,
 }
 
 print("PASS: annotation undo and redo restore complete snapshots")
+
+let layeredHitTest = runAnnotationLayeredHitTestSelfTest()
+guard layeredHitTest.noteWinsInsideRectangle else {
+    fputs("FAIL: a hollow rectangle should not block a note inside it\n", stderr)
+    exit(1)
+}
+guard layeredHitTest.rectangleWinsOnBorder else {
+    fputs("FAIL: a hollow rectangle should remain selectable on its border\n", stderr)
+    exit(1)
+}
+guard layeredHitTest.emptyInteriorPassesThrough else {
+    fputs("FAIL: an empty area inside a hollow rectangle should pass through\n", stderr)
+    exit(1)
+}
+
+print("PASS: hollow rectangle borders remain selectable while their interiors pass through")

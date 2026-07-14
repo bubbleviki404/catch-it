@@ -1,0 +1,35 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>CatchIt v0.4.1 发版验证</title>
+  <style>
+    *{box-sizing:border-box}body{margin:0;background:#f5f7fb;color:#182033;font-family:-apple-system,BlinkMacSystemFont,"PingFang SC",sans-serif}
+    main{width:1120px;margin:0 auto;padding:64px 0 72px}.eyebrow{color:#3268e8;font-size:16px;font-weight:700;letter-spacing:.08em}
+    h1{margin:12px 0 8px;font-size:44px;letter-spacing:-.03em}.lead{margin:0 0 34px;color:#667085;font-size:20px}
+    .summary{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-bottom:28px}.metric,.step{background:#fff;border:1px solid #e5e9f2;border-radius:18px;box-shadow:0 8px 30px rgba(37,55,92,.06)}
+    .metric{padding:22px}.metric b{display:block;font-size:26px;margin-bottom:6px}.metric span,.step p{color:#667085}.steps{display:grid;gap:14px}
+    .step{padding:22px 24px;display:grid;grid-template-columns:48px 1fr 150px;align-items:center;gap:18px}.icon{width:42px;height:42px;border-radius:50%;background:#eaf8ef;color:#14804a;display:grid;place-items:center;font-size:24px;font-weight:800}
+    .step h2{margin:0 0 7px;font-size:20px}.step p{margin:0;line-height:1.55}.status{justify-self:end;padding:8px 13px;border-radius:999px;background:#eaf8ef;color:#14804a;font-weight:700}
+    .gate{margin-top:24px;border-radius:18px;background:#eef4ff;border:1px solid #bfd1ff;padding:22px 24px;color:#294c9b;line-height:1.6}code{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:.94em}footer{margin-top:28px;color:#98a2b3;font-size:14px}
+  </style>
+</head>
+<body><main>
+  <div class="eyebrow">真实执行记录 · 2026-07-14</div><h1>CatchIt v0.4.1 发版验证</h1>
+  <p class="lead">从自动化测试、Universal 构建到 Developer ID 签名与 Apple 公证。</p>
+  <section class="summary">
+    <div class="metric"><b>12/12</b><span>自动化检查通过</span></div><div class="metric"><b>2 架构</b><span>arm64 + x86_64</span></div>
+    <div class="metric"><b>1.3 MB</b><span>正式下载 ZIP</span></div><div class="metric"><b>Accepted</b><span>Apple 公证结果</span></div>
+  </section>
+  <section class="steps">
+    <article class="step"><div class="icon">✓</div><div><h2>自动化与回归测试</h2><p>快捷键、Retina、保存与剪贴板、框选、裁剪、马赛克、撤销重做、标注层级、性能和更新检查全部通过。</p></div><div class="status">PASS</div></article>
+    <article class="step"><div class="icon">✓</div><div><h2>官网生产构建</h2><p>ESLint、TypeScript、Next.js 静态页面生成通过。</p></div><div class="status">PASS</div></article>
+    <article class="step"><div class="icon">✓</div><div><h2>Universal Release 构建</h2><p>版本 <code>0.4.1 (6)</code>；Apple Silicon 与 Intel；Hardened Runtime 已启用。</p></div><div class="status">PASS</div></article>
+    <article class="step"><div class="icon">✓</div><div><h2>Developer ID 签名</h2><p>Bundle ID <code>com.gaplab.catchit</code>，Team ID <code>A2CNQZ2XX8</code>，签名验证通过。</p></div><div class="status">PASS</div></article>
+    <article class="step"><div class="icon">✓</div><div><h2>Apple 公证与 Gatekeeper</h2><p>Submission ID <code>4af0616b-c1ee-46b4-bdef-e69762d30568</code>；票据已装订。</p></div><div class="status">ACCEPTED</div></article>
+    <article class="step"><div class="icon">✓</div><div><h2>最终安装验收</h2><p>安装包与 dist 二进制一致；编辑输出保持 <code>3024 × 1964</code>，没有 Retina 重复放大。</p></div><div class="status">PASS</div></article>
+  </section>
+  <div class="gate"><strong>发布闸门：</strong>所有发布前检查已通过。创建 Git tag 与 GitHub Release 前，仍需核对提交范围和 Release Notes。</div>
+  <footer>安全说明：私钥始终保留在 macOS 钥匙串；Apple 公证仅接收应用包，不上传源代码。</footer>
+</main></body></html>

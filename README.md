@@ -47,7 +47,7 @@ chmod +x scripts/run-self-tests.sh
 
 ## 使用编辑器
 
-1. 选择“矩形”，拖拽勾选重点；矩形模式下单击已有框会自动选中，拖动 8 个圆点可调整大小。
+1. 选择“矩形”，拖拽勾选重点；矩形模式下单击已有框的边框会自动选中，透明内部不会挡住便签或文字，拖动 8 个圆点可调整大小。
 2. 选择“便签”，点击截图后直接输入；色板参考无边记，提供紫、红、橙、黄、绿、青、灰 7 种浅色纸张。
 3. 选择“文字”，点击截图后直接输入无底色文字；文字会随边框缩放并可切换颜色。
 4. 选择“马赛克”，拖过敏感区域即可像素化；马赛克区域仍可移动、缩放和删除。
@@ -68,4 +68,4 @@ CATCHIT_RELEASE=1 \
 ./scripts/build-app.sh
 ```
 
-完整发布步骤与校验项见 [`DISTRIBUTION.md`](DISTRIBUTION.md)，隐私说明见 [`PRIVACY.md`](PRIVACY.md)。
+完整发布步骤与校验项见 [`DISTRIBUTION.md`](DISTRIBUTION.md)，带真实截图的操作手册见 [`docs/release-runbook/README.md`](docs/release-runbook/README.md)，隐私说明见 [`PRIVACY.md`](PRIVACY.md)。

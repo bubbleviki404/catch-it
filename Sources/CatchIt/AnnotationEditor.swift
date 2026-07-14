@@ -24,6 +24,31 @@ private struct Annotation {
     var color: NSColor
 }
 
+private func annotationContainsHit(_ annotation: Annotation, at point: CGPoint, tolerance: CGFloat) -> Bool {
+    let expandedRect = annotation.rect.insetBy(dx: -tolerance, dy: -tolerance)
+    guard expandedRect.contains(point) else { return false }
+
+    // Rectangle annotations are hollow. Keep a forgiving hit band around the
+    // stroke, but let clicks in the transparent center reach annotations below.
+    guard annotation.kind == .rectangle else { return true }
+    guard annotation.rect.width > tolerance * 2,
+          annotation.rect.height > tolerance * 2 else { return true }
+    let transparentInterior = annotation.rect.insetBy(dx: tolerance, dy: tolerance)
+    return !transparentInterior.contains(point)
+}
+
+private func hitTestAnnotationIndex(
+    in annotations: [Annotation],
+    at point: CGPoint,
+    tolerance: CGFloat,
+    includeCrop: Bool
+) -> Int? {
+    annotations.indices.reversed().first {
+        (annotations[$0].kind != .crop || includeCrop) &&
+        annotationContainsHit(annotations[$0], at: point, tolerance: tolerance)
+    }
+}
+
 private enum ResizeHandle: CaseIterable {
     case topLeft, top, topRight, right, bottomRight, bottom, bottomLeft, left
 }
@@ -437,11 +462,14 @@ private final class AnnotationCanvasView: NSView, NSTextViewDelegate {
         canvas.commitCropIfNeeded()
         let committedAspect = canvas.imageRect.width / canvas.imageRect.height
         let rendered = canvas.renderedImage()
+        var renderedRect = CGRect(origin: .zero, size: rendered.size)
+        let renderedCGImage = rendered.cgImage(forProposedRect: &renderedRect, context: nil, hints: nil)
         let mosaicCacheSize = canvas.pixelatedImage.size
         return AnnotationCropSelfTestResult(
             focusedAspect: focusedAspect,
             committedAspect: committedAspect,
             outputSize: rendered.size,
+            outputPixelSize: renderedCGImage.map { NSSize(width: $0.width, height: $0.height) } ?? .zero,
             didLeaveCropTool: canvas.tool == .select,
             mosaicCacheSize: mosaicCacheSize
         )
@@ -469,6 +497,45 @@ private final class AnnotationCanvasView: NSView, NSTextViewDelegate {
             countAfterEdit: countAfterEdit,
             countAfterUndo: countAfterUndo,
             countAfterRedo: canvas.annotations.count
+        )
+    }
+
+    static func runLayeredHitTestSelfTest() -> AnnotationLayeredHitTestSelfTestResult {
+        // The rectangle is deliberately later (topmost) to reproduce the bug:
+        // its transparent center must not block the note underneath.
+        let testAnnotations = [
+            Annotation(
+                kind: .note,
+                rect: CGRect(x: 0.35, y: 0.35, width: 0.3, height: 0.3),
+                text: "测试",
+                color: .systemYellow
+            ),
+            Annotation(
+                kind: .rectangle,
+                rect: CGRect(x: 0.1, y: 0.1, width: 0.8, height: 0.8),
+                color: .systemRed
+            )
+        ]
+        let tolerance: CGFloat = 0.008
+        return AnnotationLayeredHitTestSelfTestResult(
+            noteWinsInsideRectangle: hitTestAnnotationIndex(
+                in: testAnnotations,
+                at: CGPoint(x: 0.5, y: 0.5),
+                tolerance: tolerance,
+                includeCrop: false
+            ) == 0,
+            rectangleWinsOnBorder: hitTestAnnotationIndex(
+                in: testAnnotations,
+                at: CGPoint(x: 0.1, y: 0.5),
+                tolerance: tolerance,
+                includeCrop: false
+            ) == 1,
+            emptyInteriorPassesThrough: hitTestAnnotationIndex(
+                in: testAnnotations,
+                at: CGPoint(x: 0.2, y: 0.2),
+                tolerance: tolerance,
+                includeCrop: false
+            ) == nil
         )
     }
 
@@ -559,8 +626,7 @@ private final class AnnotationCanvasView: NSView, NSTextViewDelegate {
         }
 
         if tool == .rectangle,
-           let hit = hitTestAnnotation(at: point),
-           annotations[hit].kind == .rectangle {
+           let hit = hitTestAnnotation(at: point) {
             setSelection(hit)
             tool = .select
             onToolChanged?(.select)
@@ -731,10 +797,27 @@ private final class AnnotationCanvasView: NSView, NSTextViewDelegate {
         let fullRect = CGRect(origin: .zero, size: size)
         let crop = annotations.last(where: { $0.kind == .crop })?.rect ?? CGRect(x: 0, y: 0, width: 1, height: 1)
         let cropRect = denormalize(crop, in: fullRect).integral.intersection(fullRect)
-        let result = NSImage(size: cropRect.size)
-        result.lockFocus()
-        NSGraphicsContext.current?.imageInterpolation = .high
+        let pixelWidth = max(1, Int(cropRect.width))
+        let pixelHeight = max(1, Int(cropRect.height))
+        guard let bitmap = NSBitmapImageRep(
+            bitmapDataPlanes: nil,
+            pixelsWide: pixelWidth,
+            pixelsHigh: pixelHeight,
+            bitsPerSample: 8,
+            samplesPerPixel: 4,
+            hasAlpha: true,
+            isPlanar: false,
+            colorSpaceName: .deviceRGB,
+            bytesPerRow: 0,
+            bitsPerPixel: 0
+        ), let bitmapContext = NSGraphicsContext(bitmapImageRep: bitmap) else {
+            return NSImage(size: .zero)
+        }
+        bitmap.size = cropRect.size
+
         NSGraphicsContext.saveGraphicsState()
+        NSGraphicsContext.current = bitmapContext
+        bitmapContext.imageInterpolation = .high
         let transform = NSAffineTransform()
         transform.translateX(by: -cropRect.minX, yBy: -cropRect.minY)
         transform.concat()
@@ -743,7 +826,9 @@ private final class AnnotationCanvasView: NSView, NSTextViewDelegate {
             draw($0, in: fullRect, viewport: fullViewport, outputScale: max(1, size.width / 1200))
         }
         NSGraphicsContext.restoreGraphicsState()
-        result.unlockFocus()
+
+        let result = NSImage(size: cropRect.size)
+        result.addRepresentation(bitmap)
         return result
     }
 
@@ -1025,10 +1110,12 @@ private final class AnnotationCanvasView: NSView, NSTextViewDelegate {
 
     private func hitTestAnnotation(at point: CGPoint) -> Int? {
         let tolerance = max(activeViewport.width, activeViewport.height) * 0.008
-        return annotations.indices.reversed().first {
-            (annotations[$0].kind != .crop || tool == .crop) &&
-            annotations[$0].rect.insetBy(dx: -tolerance, dy: -tolerance).contains(point)
-        }
+        return hitTestAnnotationIndex(
+            in: annotations,
+            at: point,
+            tolerance: tolerance,
+            includeCrop: tool == .crop
+        )
     }
 
     private func moveAnnotation(at index: Int, origin: CGPoint) {
@@ -1191,6 +1278,7 @@ struct AnnotationCropSelfTestResult {
     let focusedAspect: CGFloat
     let committedAspect: CGFloat
     let outputSize: NSSize
+    let outputPixelSize: NSSize
     let didLeaveCropTool: Bool
     let mosaicCacheSize: NSSize
 }
@@ -1201,10 +1289,20 @@ struct AnnotationHistorySelfTestResult {
     let countAfterRedo: Int
 }
 
+struct AnnotationLayeredHitTestSelfTestResult {
+    let noteWinsInsideRectangle: Bool
+    let rectangleWinsOnBorder: Bool
+    let emptyInteriorPassesThrough: Bool
+}
+
 func runAnnotationCropSelfTest() -> AnnotationCropSelfTestResult {
     AnnotationCanvasView.runCropViewportSelfTest()
 }
 
 func runAnnotationHistorySelfTest() -> AnnotationHistorySelfTestResult {
     AnnotationCanvasView.runHistorySelfTest()
+}
+
+func runAnnotationLayeredHitTestSelfTest() -> AnnotationLayeredHitTestSelfTestResult {
+    AnnotationCanvasView.runLayeredHitTestSelfTest()
 }
