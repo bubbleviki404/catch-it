@@ -108,6 +108,8 @@ git push origin v0.4.1
 4. 核对下载 ZIP 的 SHA-256。
 5. 在没有开发环境的 Mac 上验证首次授权、快捷键、截图、编辑和覆盖升级。
 
+![GitHub Release 正式发布结果](images/05-github-release-published.png)
+
 ## 四、v0.4.1 演练记录
 
 - 自动化测试、官网 lint/build：通过。
@@ -115,4 +117,6 @@ git push origin v0.4.1
 - Apple 公证：`Accepted`。
 - Submission ID：`4af0616b-c1ee-46b4-bdef-e69762d30568`。
 - ZIP SHA-256：`cc1a96e4fe9d6f7558eddb499e75845f3bdcc1557a59fdf33a87bbc1e70aeea8`。
+- GitHub Release：`Latest`，两个正式 ZIP 均已发布。
+- 线上下载复核：从 GitHub Release 重新下载 `CatchIt-latest.zip`，ZIP 完整且 SHA-256 与本地正式构建一致。
 - 最终人工验收：编辑输出 `3024 × 1964`，与原始截图一致。
