@@ -72,7 +72,7 @@ cp "$VERSIONED_ARCHIVE" "$LATEST_ARCHIVE"
 if [[ "${CATCHIT_RELEASE:-0}" == "1" ]]; then
   ARCH_INFO=$(lipo -archs "$APP/Contents/MacOS/CatchIt")
   [[ "$ARCH_INFO" == *arm64* && "$ARCH_INFO" == *x86_64* ]] || { echo "Release binary is not universal: $ARCH_INFO" >&2; exit 1; }
-  codesign -dv --verbose=4 "$APP" 2>&1 | rg -q 'flags=.*runtime' || { echo "Hardened Runtime is missing" >&2; exit 1; }
+  codesign -dv --verbose=4 "$APP" 2>&1 | rg 'flags=.*runtime' >/dev/null || { echo "Hardened Runtime is missing" >&2; exit 1; }
   xcrun stapler validate "$APP"
   spctl --assess --type execute --verbose=2 "$APP"
 fi
