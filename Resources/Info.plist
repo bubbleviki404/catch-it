@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+    <key>CFBundleDevelopmentRegion</key>
+    <string>zh_CN</string>
+    <key>CFBundleDisplayName</key>
+    <string>CatchIt</string>
+    <key>CFBundleExecutable</key>
+    <string>CatchIt</string>
+    <key>CFBundleIdentifier</key>
+    <string>com.gaplab.catchit</string>
+    <key>CFBundleIconFile</key>
+    <string>AppIcon</string>
+    <key>CFBundleInfoDictionaryVersion</key>
+    <string>6.0</string>
+    <key>CFBundleName</key>
+    <string>CatchIt</string>
+    <key>CFBundlePackageType</key>
+    <string>APPL</string>
+    <key>CFBundleShortVersionString</key>
+    <string>0.4.0</string>
+	<key>CFBundleVersion</key>
+	<string>5</string>
+	<key>CatchItGitHubRepository</key>
+	<string>bubbleviki404/catch-it</string>
+    <key>LSMinimumSystemVersion</key>
+    <string>13.0</string>
+    <key>LSUIElement</key>
+    <false/>
+	<key>NSHighResolutionCapable</key>
+	<true/>
+	<key>NSHumanReadableCopyright</key>
+	<string>Copyright © 2026 CatchIt contributors.</string>
+    <key>NSScreenCaptureUsageDescription</key>
+    <string>CatchIt 需要读取屏幕内容，以便按快捷键截取全屏或所选区域并进行标注。</string>
+</dict>
+</plist>
