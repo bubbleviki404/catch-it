@@ -3,10 +3,4 @@
 .swiftpm/
 dist/
 audit/
-website/node_modules/
-website/.next/
-website/out/
-website/.vinext/
-website/.wrangler/
-website/.env*
 *.log
